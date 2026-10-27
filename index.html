@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Little Something for You ❤️</title>
+  <meta name="description" content="A personal note and a small invitation, made just for you." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Google Fonts: Cormorant Garamond (Serif), Caveat (Handwritten), Plus Jakarta Sans (Clean UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./styles.css" />
+
+
+  <!-- Targeted fix: styling for the restored Manali-memory invitation popup -->
+  <style id="memory-prompt-fix-styles">
+    .memory-prompt-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 22px 16px max(22px, env(safe-area-inset-bottom));
+      background: rgba(42, 26, 32, 0.28);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity 220ms ease;
+    }
+
+    .memory-prompt-overlay[hidden] {
+      display: none !important;
+    }
+
+    .memory-prompt-overlay.is-visible {
+      opacity: 1;
+    }
+
+    .memory-prompt-card {
+      position: relative;
+      width: min(100%, 480px);
+      box-sizing: border-box;
+      padding: 25px 23px 22px;
+      overflow: hidden;
+      text-align: center;
+      color: #513741;
+      background: linear-gradient(145deg, #fffaf7 0%, #fff0f3 100%);
+      border: 1px solid rgba(191, 126, 149, 0.42);
+      border-radius: 24px;
+      box-shadow: 0 22px 70px rgba(52, 25, 37, 0.24);
+      transform: translateY(22px) scale(0.985);
+      transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .memory-prompt-overlay.is-visible .memory-prompt-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .memory-prompt-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(124, 76, 93, 0.08);
+      color: #795462;
+      font: inherit;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .memory-prompt-heart {
+      display: inline-grid;
+      width: 54px;
+      height: 54px;
+      place-items: center;
+      margin: 0 auto 11px;
+      border-radius: 50%;
+      background: rgba(221, 153, 176, 0.19);
+      font-size: 28px;
+      animation: memoryPromptPulse 1.8s ease-in-out infinite;
+    }
+
+    .memory-prompt-title {
+      margin: 0 20px 8px;
+      color: #754659;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(25px, 5vw, 32px);
+      font-weight: 600;
+      line-height: 1.17;
+    }
+
+    .memory-prompt-copy {
+      max-width: 360px;
+      margin: 0 auto 20px;
+      color: #765d65;
+      font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .memory-prompt-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .memory-prompt-actions button {
+      min-height: 45px;
+      padding: 11px 18px;
+      border-radius: 999px;
+      font: 600 13px/1.3 'Plus Jakarta Sans', Arial, sans-serif;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .memory-prompt-show {
+      border: 1px solid #a75e79;
+      color: #fff;
+      background: linear-gradient(135deg, #b66f89, #96556f);
+      box-shadow: 0 7px 18px rgba(150, 85, 111, 0.22);
+    }
+
+    .memory-prompt-later {
+      border: 1px solid rgba(150, 85, 111, 0.28);
+      color: #795462;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .memory-prompt-actions button:hover {
+      transform: translateY(-1px);
+    }
+
+    .memory-prompt-actions button:focus-visible,
+    .memory-prompt-close:focus-visible {
+      outline: 3px solid rgba(166, 91, 121, 0.45);
+      outline-offset: 3px;
+    }
+
+    body.memory-prompt-open {
+      overflow: hidden;
+    }
+
+    @keyframes memoryPromptPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.07); }
+    }
+
+    @media (max-width: 420px) {
+      .memory-prompt-overlay {
+        padding: 16px 12px max(16px, env(safe-area-inset-bottom));
+      }
+      .memory-prompt-card {
+        padding: 23px 17px 18px;
+        border-radius: 21px;
+      }
+      .memory-prompt-actions {
+        flex-direction: column;
+      }
+      .memory-prompt-actions button {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .memory-prompt-overlay,
+      .memory-prompt-card,
+      .memory-prompt-actions button {
+        transition: none !important;
+      }
+      .memory-prompt-heart {
+        animation: none !important;
+      }
+    }
+  </style>
+
+</head>
+<body>
+  <!-- Subtle Floating Background Canvas/Particles -->
+  <div id="ambient-particles" class="ambient-particles" aria-hidden="true"></div>
+
+  <!-- Persistent Audio Element (Relative path for GitHub Pages compatibility) -->
+  <audio id="bg-music" preload="auto" loop>
+    <source src="./assets/our-song.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Persistent Floating Music Controller (Hidden until Stage 1 starts) -->
+  <aside id="music-controller" class="music-controller hidden" aria-label="Background Music Controls">
+    <button id="music-toggle-btn" class="music-btn" type="button" aria-label="Pause music" title="Pause / Play Music">
+      <span id="music-icon" class="music-icon playing" aria-hidden="true">♫</span>
+      <span id="music-status-text" class="sr-only">Pause Music</span>
+    </button>
+    <div class="volume-wrapper">
+      <label for="volume-slider" class="sr-only">Music Volume</label>
+      <input
+        id="volume-slider"
+        class="volume-slider"
+        type="range"
+        min="0"
+        max="1"
+        step="0.05"
+        value="0.4"
+        aria-label="Adjust music volume"
+      />
+    </div>
+    <span id="audio-fallback-badge" class="audio-fallback-badge hidden" role="status">
+      Tap ♫ to play song
+    </span>
+  </aside>
+
+  <!-- Progress Breadcrumb / Page Indicator (Shown after Opening Screen) -->
+  <header id="journey-header" class="journey-header hidden">
+    <div class="journey-steps" role="navigation" aria-label="Page Progress">
+      <span class="step-dot active" data-step-indicator="1" title="A Note for You"></span>
+      <span class="step-dot" data-step-indicator="2" title="Manali Memory"></span>
+      <span class="step-dot" data-step-indicator="3" title="Pick a Day"></span>
+      <span class="step-dot" data-step-indicator="4" title="Lunch or Dinner"></span>
+      <span class="step-dot" data-step-indicator="5" title="Choose Restaurant"></span>
+      <span class="step-dot" data-step-indicator="6" title="Our Plan"></span>
+    </div>
+  </header>
+
+  <!-- Main Single-Page Stage Container -->
+  <main id="app-container" class="app-container">
+
+    <!-- ==========================================
+         STAGE 0: OPENING MUSIC REQUEST SCREEN
+         ========================================== -->
+    <section id="stage-0" class="stage active" aria-labelledby="stage-0-title">
+      <div class="letter-card intro-card">
+        <div class="wax-seal-badge" aria-hidden="true">
+          <svg class="music-note-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4" />
+            <path d="M26 42V22L44 18V38" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="22" cy="42" r="4.5" fill="currentColor"/>
+            <circle cx="40" cy="38" r="4.5" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <p class="eyebrow-script">A Little Something for You ❤️</p>
+        <h1 id="stage-0-title" class="serif-heading">
+          Before you begin, ek chhoti si request hai… ❤️
+        </h1>
+        <p class="body-prose">
+          Thoda sa volume badha lena, please. I have something for you, and I want you to feel it with the music.
+        </p>
+
+        <div class="cta-group">
+          <button id="start-experience-btn" class="btn btn-primary" type="button">
+            Okay, I'm ready ❤️
+          </button>
+        </div>
+
+        <p class="micro-note">
+          Headphones optional, but they might make this a little more special. 🎧
+        </p>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 1: SINCERE APOLOGY LETTER
+         ========================================== -->
+    <section id="stage-1" class="stage" aria-labelledby="stage-1-title" hidden>
+      <div class="letter-card stationery-paper">
+        <div class="letter-header">
+          <span class="date-stamp" id="current-date-stamp">For You</span>
+          <span class="ornament-divider" aria-hidden="true">✦ ❦ ✦</span>
+        </div>
+
+        <h2 id="stage-1-title" class="sr-only">A Sincere Apology</h2>
+
+        <div class="letter-paragraphs" id="apology-letter-body">
+          <p class="stagger-line">
+            Mujhe pata hai tum gussa ho, par main tumhe mana ke rahunga. ❤️
+          </p>
+          <p class="stagger-line">
+            Maine tumse seekha hai ki tumhe shayad hamesha woh treatment nahi mila jiske tum haqdar ho. Aur mujhe samajh aa raha hai ki is relationship ki responsibility sirf tumhari nahi hai. It's <strong>US</strong> who are building this relationship together.
+          </p>
+          <p class="stagger-line">
+            Mujhe bhi apni galtiyon ki responsibility leni hai. Main nahi chahta ki sirf sorry bolkar sab theek karne ki koshish karun. Main apne actions se tumhe dikhana chahta hoon ki tum mere liye kitni important ho.
+          </p>
+          <p class="stagger-line">
+            I know words alone aren't enough, but I hope you'll let me make things right, one little step at a time. ❤️
+          </p>
+        </div>
+
+        <hr class="soft-rule" />
+
+        <div class="invitation-prompt stagger-line">
+          <p class="serif-subheading">
+            Will you accept my apology and give me a chance to make it up to you?
+          </p>
+          <p class="handwritten-accent">
+            Aur mere saath ek date par chalogi? 🥹❤️
+          </p>
+
+          <div class="apology-actions" id="apology-buttons-area">
+            <button id="accept-apology-btn" class="btn btn-primary" type="button">
+              Yes, let's go ❤️
+            </button>
+            <button id="not-yet-btn" class="btn btn-secondary playful-btn" type="button">
+              Not yet 🙈
+            </button>
+          </div>
+
+          <!-- Respectful message if she clicks "Not yet" -->
+          <div id="not-yet-panel" class="respectful-notice hidden" role="region" aria-live="polite">
+            <p class="body-prose">
+              I completely understand, and there is zero rush. Take all the time and space you need. Whenever you feel ready—today, tomorrow, or whenever your heart feels lighter—this little page and my invitation will be right here waiting for you. ❤️
+            </p>
+            <button id="return-to-invite-btn" class="btn btn-outline-small" type="button">
+              Okay, show me what you planned ❤️
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 2: OUR MANALI MEMORY (SCRAPBOOK)
+         ========================================== -->
+    <section id="stage-2" class="stage" aria-labelledby="stage-2-title" hidden>
+      <div class="letter-card manali-theme-card">
+        <!-- Misty Mountain & Tea Cup Illustration Header -->
+        <div class="manali-scenery" aria-hidden="true">
+          <svg class="mountains-svg" viewBox="0 0 800 180" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f5e6d8" />
+                <stop offset="100%" stop-color="#e3d5ca" />
+              </linearGradient>
+              <linearGradient id="mistGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.1" />
+                <stop offset="50%" stop-color="#ffffff" stop-opacity="0.65" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.1" />
+              </linearGradient>
+            </defs>
+            <rect width="800" height="180" fill="url(#skyGrad)" />
+            <!-- Soft Sun -->
+            <circle cx="650" cy="55" r="28" fill="#f7d08a" opacity="0.65" />
+            <!-- Distant Peaks -->
+            <polygon points="0,180 140,65 290,180" fill="#9c8984" opacity="0.45" />
+            <polygon points="200,180 380,45 560,180" fill="#7f6c68" opacity="0.5" />
+            <polygon points="440,180 610,60 800,180" fill="#8d7974" opacity="0.45" />
+            <!-- Foreground Peaks -->
+            <polygon points="-40,180 90,95 240,180" fill="#5e4b47" opacity="0.65" />
+            <polygon points="310,180 480,85 670,180" fill="#52403c" opacity="0.7" />
+            <!-- Mist Layer -->
+            <rect y="125" width="800" height="55" fill="url(#mistGrad)" />
+          </svg>
+
+          <!-- Animated Steaming Chai Cup -->
+          <div class="chai-emblem" title="Warm Chai in Manali">
+            <svg class="chai-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Steam Wisps -->
+              <path class="steam-line steam-1" d="M30 26C30 20 35 18 35 12" stroke="#8c584c" stroke-width="2" stroke-linecap="round"/>
+              <path class="steam-line steam-2" d="M40 24C40 17 45 15 45 9" stroke="#8c584c" stroke-width="2" stroke-linecap="round"/>
+              <path class="steam-line steam-3" d="M50 26C50 20 55 18 55 12" stroke="#8c584c" stroke-width="2" stroke-linecap="round"/>
+              <!-- Cup Body -->
+              <path d="M20 32H58V48C58 57.9411 49.9411 66 40 66H38C28.0589 66 20 57.9411 20 48V32Z" fill="#d99b66" stroke="#5c3327" stroke-width="2.2"/>
+              <!-- Chai Surface -->
+              <ellipse cx="39" cy="32" rx="19" ry="4" fill="#c47d46" stroke="#5c3327" stroke-width="2"/>
+              <!-- Cup Handle -->
+              <path d="M58 37H63C66.866 37 70 40.134 70 44C70 47.866 66.866 51 63 51H58" stroke="#5c3327" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Saucer -->
+              <path d="M14 66H64" stroke="#5c3327" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="manali-content">
+          <span class="scrapbook-tag">Memory Scrapbook • Himachal Pradesh</span>
+          <h2 id="stage-2-title" class="serif-heading">
+            Ek chhoti si memory… jo mere dil ke bohot kareeb hai ❤️
+          </h2>
+
+          <!-- Optional Scrapbook Polaroid Frames (Uses personal photo if added, otherwise tasteful mountain/chai art) -->
+          <div class="scrapbook-polaroids">
+            <figure class="polaroid polaroid-left">
+              <div class="polaroid-img-wrap">
+                <img
+                  src="./assets/manali-1.jpg"
+                  alt="Misty mountain roads and pine trees in Manali"
+                  onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80';"
+                />
+              </div>
+              <figcaption class="polaroid-caption">Pahadon wali thandi hawa 🏔️</figcaption>
+            </figure>
+
+            <figure class="polaroid polaroid-right">
+              <div class="polaroid-img-wrap">
+                <img
+                  src="./assets/manali-2.jpg"
+                  alt="Warm cup of chai on a chilly mountain drive"
+                  onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=600&q=80';"
+                />
+              </div>
+              <figcaption class="polaroid-caption">Car wali garam chai ☕❤️</figcaption>
+            </figure>
+          </div>
+
+          <!-- Handwritten Journal Entry -->
+          <div class="journal-paper" id="manali-letter-body">
+            <p class="journal-line">
+              Yaad hai Manali mein jab main tumhare liye chai lekar aaya tha aur car mein tumhe di thi? ☕❤️
+            </p>
+            <p class="journal-line">
+              Pata nahi kyun, par tumhare liye woh chhoti si chai laane aur tumhe car mein dete waqt jo feeling aayi thi na… mujhe woh bohot pasand hai.
+            </p>
+            <p class="journal-line">
+              Us moment mein kuch extraordinary nahi tha. Bas tum thi, main tha, aur tumhare liye kuch chhota sa karne ki khushi thi.
+            </p>
+            <p class="journal-line">
+              Aur sach kahun, toh main aise hi chhote-chhote moments tumhare saath hamesha create karna chahta hoon.
+            </p>
+            <p class="journal-line">
+              Tumhare liye chai lana, tumhari chhoti-chhoti baaton ka khayal rakhna, tumhare saath naye places explore karna, aur roz ke ordinary moments ko special banana.
+            </p>
+            <p class="journal-line">
+              Main nahi chahta ki care sirf special occasions par dikhe. Main chahta hoon ki tumhe everyday feel ho ki someone is genuinely trying to make you feel loved and valued.
+            </p>
+            <p class="journal-line">
+              Maybe that's what I want us to keep building together. ❤️
+            </p>
+          </div>
+
+          <blockquote class="chai-quote">
+            “Kabhi-kabhi pyaar grand gestures mein nahi, bas tumhare liye ek cup chai laane mein hota hai. ☕”
+          </blockquote>
+
+          <div class="stage-nav-row">
+            <button class="btn btn-ghost" type="button" data-go-stage="1">
+              ← Back to letter
+            </button>
+            <button id="to-stage-3-btn" class="btn btn-primary" type="button">
+              Let's make more memories together ❤️
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 3: CHOOSE OUR DATE (SATURDAY / SUNDAY)
+         ========================================== -->
+    <section id="stage-3" class="stage" aria-labelledby="stage-3-title" hidden>
+      <div class="letter-card planner-card">
+        <p class="eyebrow-script">Step 1 of 3 • Save the Day</p>
+        <h2 id="stage-3-title" class="serif-heading">
+          Okay, madam ❤️ Ab date plan karte hain!
+        </h2>
+        <p class="serif-subheading">When should I take you out?</p>
+
+        <div class="choice-grid two-col" role="radiogroup" aria-label="Select a weekend day">
+          <!-- Saturday Card -->
+          <button
+            id="select-saturday-btn"
+            class="choice-card day-card"
+            type="button"
+            data-day-type="Saturday"
+            aria-pressed="false"
+          >
+            <span class="card-icon" aria-hidden="true">✨🗓️</span>
+            <span class="card-title">Saturday</span>
+            <span id="saturday-date-label" class="card-date-highlight">Loading date...</span>
+            <span class="card-subtext">Weekend vibes, zero rush, dressed up just for each other.</span>
+          </button>
+
+          <!-- Sunday Card -->
+          <button
+            id="select-sunday-btn"
+            class="choice-card day-card"
+            type="button"
+            data-day-type="Sunday"
+            aria-pressed="false"
+          >
+            <span class="card-icon" aria-hidden="true">☀️🌸</span>
+            <span class="card-title">Sunday</span>
+            <span id="sunday-date-label" class="card-date-highlight">Loading date...</span>
+            <span class="card-subtext">Slow, cozy conversations and ending the week on a sweet note.</span>
+          </button>
+        </div>
+
+        <div class="stage-nav-row">
+          <button class="btn btn-ghost" type="button" data-go-stage="2">
+            ← Back to Manali memory
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 4: LUNCH OR DINNER
+         ========================================== -->
+    <section id="stage-4" class="stage" aria-labelledby="stage-4-title" hidden>
+      <div class="letter-card planner-card">
+        <p class="eyebrow-script">Step 2 of 3 • Set the Mood</p>
+        <h2 id="stage-4-title" class="serif-heading">
+          What's your kind of date, beautiful? ❤️
+        </h2>
+        <p class="body-prose" id="selected-day-reminder">
+          Pick the vibe that sounds best to you.
+        </p>
+
+        <div class="choice-grid two-col" role="radiogroup" aria-label="Select meal preference">
+          <!-- Lunch Card -->
+          <button
+            id="select-lunch-btn"
+            class="choice-card meal-card"
+            type="button"
+            data-meal="Lunch date"
+            aria-pressed="false"
+          >
+            <div class="meal-illustration" aria-hidden="true">🍝☀️</div>
+            <span class="card-title">🍝 Lunch date</span>
+            <span class="card-subtext">
+              Sunlit tables, relaxed afternoon conversations, dessert, and maybe a drive or coffee after.
+            </span>
+          </button>
+
+          <!-- Dinner Card -->
+          <button
+            id="select-dinner-btn"
+            class="choice-card meal-card"
+            type="button"
+            data-meal="Dinner date"
+            aria-pressed="false"
+          >
+            <div class="meal-illustration" aria-hidden="true">🌙🕯️</div>
+            <span class="card-title">🌙 Dinner date</span>
+            <span class="card-subtext">
+              Warm candlelight, evening city lights, unhurried courses, and a cozy night drive back.
+            </span>
+          </button>
+        </div>
+
+        <div class="stage-nav-row">
+          <button class="btn btn-ghost" type="button" data-go-stage="3">
+            ← Change day
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 5: CHOOSE OUR RESTAURANT
+         ========================================== -->
+    <section id="stage-5" class="stage" aria-labelledby="stage-5-title" hidden>
+      <div class="letter-card wide-card">
+        <p class="eyebrow-script">Step 3 of 3 • The Destination</p>
+        <h2 id="stage-5-title" class="serif-heading">
+          Ab batao, meri date ko kahan leke jaana hai? 😌❤️
+        </h2>
+        <p class="body-prose">
+          I shortlisted three places in Mumbai with great food and warm ambiance. Pick whichever you're craving!
+        </p>
+
+        <!-- Restaurant Cards Rendered by JavaScript -->
+        <div id="restaurant-grid" class="restaurant-grid" role="region" aria-label="Restaurant Options"></div>
+
+        <div class="stage-nav-row">
+          <button class="btn btn-ghost" type="button" data-go-stage="4">
+            ← Change Lunch / Dinner
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 6: FINAL DATE SUMMARY & CONFIRMATION
+         ========================================== -->
+    <section id="stage-6" class="stage" aria-labelledby="stage-6-title" hidden>
+      <div class="letter-card summary-card">
+        <p class="eyebrow-script">Almost Ready ✨</p>
+        <h2 id="stage-6-title" class="serif-heading">
+          Our little date is coming together! ❤️
+        </h2>
+
+        <div class="itinerary-ticket" aria-label="Selected Date Summary">
+          <div class="ticket-row">
+            <span class="ticket-label">When</span>
+            <span id="summary-day" class="ticket-value">—</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Vibe</span>
+            <span id="summary-meal" class="ticket-value">—</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Where</span>
+            <span id="summary-restaurant" class="ticket-value">—</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Address</span>
+            <span id="summary-address" class="ticket-value ticket-address">—</span>
+          </div>
+          <div class="ticket-actions">
+            <a
+              id="summary-map-link"
+              class="map-inline-link"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              📍 View on Google Maps ↗
+            </a>
+          </div>
+        </div>
+
+        <!-- Optional Note she can add if she wants -->
+        <div class="optional-note-box">
+          <label for="her-custom-note" class="note-label">
+            Anything else you'd like me to know? (Optional—cravings, pickup time, or a little note ❤️)
+          </label>
+          <textarea
+            id="her-custom-note"
+            class="note-textarea"
+            rows="2"
+            maxlength="300"
+            placeholder="E.g., Pick me up around 7:30 PM, or bring chocolates! 🍫"
+          ></textarea>
+        </div>
+
+        <p class="handwritten-closing">
+          “Bas ab tumhara saath chahiye. Baaki planning meri responsibility. ❤️”
+        </p>
+
+        <p class="privacy-note">
+          🔒 <strong>Small note:</strong> Pressing <em>“Confirm my choices ❤️”</em> sends only your selected day, meal, restaurant, and optional note above to my private email notification script so I can plan everything for us. Note that this does not automatically book a restaurant table.
+        </p>
+
+        <!-- Error / Status Alert Banner -->
+        <div id="submission-status" class="submission-status hidden" role="alert"></div>
+
+        <div class="cta-group summary-cta-group">
+          <button id="confirm-choices-btn" class="btn btn-primary" type="button">
+            Confirm my choices ❤️
+          </button>
+          <button id="change-choices-btn" class="btn btn-secondary" type="button">
+            Change something
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 7: FINAL SUCCESS SCREEN
+         ========================================== -->
+    <section id="stage-7" class="stage" aria-labelledby="stage-7-title" hidden>
+      <div class="letter-card success-card">
+        <div class="celebration-emblem" aria-hidden="true">🥹❤️☕</div>
+
+        <h2 id="stage-7-title" class="serif-heading">
+          It's a date! Well… it's a plan for a date. 🥹❤️
+        </h2>
+
+        <div class="success-message-body">
+          <p class="body-prose">
+            Thank you for giving me a chance.
+          </p>
+          <p class="body-prose">
+            I can't promise to be perfect, but I want to keep learning how to love you better, listen to you better, and make you feel valued.
+          </p>
+          <p class="handwritten-accent">
+            Here's to more chai moments, more adventures, and more memories together. ☕❤️
+          </p>
+        </div>
+
+        <div class="final-recap-box">
+          <h3 class="recap-heading">Our Saved Plan</h3>
+          <p id="final-recap-text" class="recap-details">—</p>
+          <p id="final-notification-receipt" class="recap-receipt-note"></p>
+        </div>
+
+        <div class="cta-group">
+          <button id="review-plan-btn" class="btn btn-secondary" type="button">
+            Review our plan
+          </button>
+          <a
+            id="final-map-btn"
+            class="btn btn-primary"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View restaurant location 📍
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- Restored intermediate popup: Not yet -> invitation -> Manali memory -->
+  <div id="memory-prompt-overlay" class="memory-prompt-overlay" hidden>
+    <div
+      id="memory-prompt-dialog"
+      class="memory-prompt-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="memory-prompt-title"
+      aria-describedby="memory-prompt-copy"
+    >
+      <button id="memory-prompt-close" class="memory-prompt-close" type="button" aria-label="Close memory invitation">×</button>
+      <div class="memory-prompt-heart" aria-hidden="true">💌</div>
+      <h2 id="memory-prompt-title" class="memory-prompt-title">Ek chhoti si memory hai mere paas… dekhogi? 🥹❤️</h2>
+      <p id="memory-prompt-copy" class="memory-prompt-copy">Manali ki ek yaad hai jo main tumhare saath share karna chahta hoon. ☕🏔️</p>
+      <div class="memory-prompt-actions">
+        <button id="memory-prompt-show-btn" class="memory-prompt-show" type="button">Show me ❤️</button>
+        <button id="memory-prompt-later-btn" class="memory-prompt-later" type="button">Maybe later</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register this capture-phase handler before script.js so its existing
+       direct Not yet -> Manali handler cannot skip the popup. -->
+  <script>
+    (() => {
+      const overlay = document.getElementById('memory-prompt-overlay');
+      const showButton = document.getElementById('memory-prompt-show-btn');
+      const laterButton = document.getElementById('memory-prompt-later-btn');
+      const closeButton = document.getElementById('memory-prompt-close');
+      const apologyButton = document.getElementById('not-yet-btn');
+      let previousFocus = null;
+
+      if (!overlay || !showButton || !laterButton || !closeButton) return;
+
+      function openMemoryPrompt() {
+        previousFocus = document.activeElement;
+        const oldNotice = document.getElementById('not-yet-panel');
+        if (oldNotice) oldNotice.classList.add('hidden');
+
+        overlay.hidden = false;
+        document.body.classList.add('memory-prompt-open');
+        requestAnimationFrame(() => {
+          overlay.classList.add('is-visible');
+          showButton.focus({ preventScroll: true });
+        });
+      }
+
+      function closeMemoryPrompt(restoreFocus = true) {
+        overlay.classList.remove('is-visible');
+        document.body.classList.remove('memory-prompt-open');
+        window.setTimeout(() => {
+          if (!overlay.classList.contains('is-visible')) overlay.hidden = true;
+        }, 280);
+
+        if (restoreFocus) {
+          window.setTimeout(() => {
+            if (previousFocus && typeof previousFocus.focus === 'function') {
+              previousFocus.focus({ preventScroll: true });
+            } else if (apologyButton) {
+              apologyButton.focus({ preventScroll: true });
+            }
+          }, 0);
+        }
+      }
+
+      // Capture the click before the existing script.js target/bubble handler.
+      // This prevents the old direct navigation from skipping the popup.
+      document.addEventListener('click', (event) => {
+        const target = event.target instanceof Element ? event.target : null;
+        const clickedNotYet = target && target.closest('#not-yet-btn');
+        if (!clickedNotYet) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        openMemoryPrompt();
+      }, true);
+
+      showButton.addEventListener('click', () => {
+        closeMemoryPrompt(false);
+
+        // Reuse the already-wired navigation control in the date screen.
+        // Its data-go-stage="2" action is the existing route to Manali.
+        const existingManaliNavigation = document.querySelector('#stage-3 [data-go-stage="2"]');
+        if (existingManaliNavigation) {
+          existingManaliNavigation.click();
+          return;
+        }
+
+        // Defensive fallback in case the existing navigation control is renamed.
+        const stages = Array.from(document.querySelectorAll('#app-container > .stage'));
+        stages.forEach((stage) => {
+          const isManali = stage.id === 'stage-2';
+          stage.hidden = !isManali;
+          stage.classList.toggle('active', isManali);
+          stage.setAttribute('aria-hidden', String(!isManali));
+        });
+        const journeyHeader = document.getElementById('journey-header');
+        if (journeyHeader) journeyHeader.classList.remove('hidden');
+        document.querySelectorAll('[data-step-indicator]').forEach((dot) => {
+          dot.classList.toggle('active', dot.getAttribute('data-step-indicator') === '2');
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      function dismissPrompt() {
+        closeMemoryPrompt(true);
+      }
+
+      laterButton.addEventListener('click', dismissPrompt);
+      closeButton.addEventListener('click', dismissPrompt);
+      overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) dismissPrompt();
+      });
+      document.addEventListener('keydown', (event) => {
+        if (!overlay.hidden && event.key === 'Escape') dismissPrompt();
+      });
+    })();
+  </script>
+
+  <script src="./script.js"></script>
+</body>
+</html>
